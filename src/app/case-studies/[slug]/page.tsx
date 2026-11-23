@@ -1,7 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { notFound } from "next/navigation";
-import type { ReactNode } from "react";
+import { CaseStudyTemplate } from "@/components/case-studies/case-study-template";
+import { caseStudyPresentation } from "@/components/case-studies/presentation";
+import type { CaseStudyData, CaseStudySection, MarkdownBlock } from "@/components/case-studies/types";
 
 const caseStudyFiles: Record<string, string> = {
   "amsl-broker-portal": "amsl-broker-portal.md",
@@ -10,11 +12,12 @@ const caseStudyFiles: Record<string, string> = {
   "it-asset-management": "it-asset-management.md",
 };
 
-type MarkdownBlock =
-  | { kind: "heading"; level: 2 | 3 | 4; text: string }
-  | { kind: "paragraph"; text: string }
-  | { kind: "list"; ordered: boolean; items: string[] }
-  | { kind: "table"; headers: string[]; rows: string[][] };
+const projectOrder = [
+  { slug: "amsl-broker-portal", title: "AMSL Broker Portal" },
+  { slug: "auc-all-utilities-collection", title: "AUC — All Utilities Collection" },
+  { slug: "trk-finance-accounting", title: "TRK Finance & Accounting Systems" },
+  { slug: "it-asset-management", title: "InfraCore LAPS" },
+];
 
 function splitTableRow(line: string): string[] {
   return line
@@ -43,7 +46,6 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
 
   while (index < lines.length) {
     const line = lines[index].trim();
-
     if (!line) {
       index += 1;
       continue;
@@ -51,20 +53,12 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
 
     const heading = line.match(/^(#{2,4})\s+(.+)$/);
     if (heading) {
-      blocks.push({
-        kind: "heading",
-        level: heading[1].length as 2 | 3 | 4,
-        text: heading[2],
-      });
+      blocks.push({ kind: "heading", level: heading[1].length as 2 | 3 | 4, text: heading[2] });
       index += 1;
       continue;
     }
 
-    if (
-      line.includes("|") &&
-      index + 1 < lines.length &&
-      isTableSeparator(lines[index + 1].trim())
-    ) {
+    if (line.includes("|") && index + 1 < lines.length && isTableSeparator(lines[index + 1].trim())) {
       const headers = splitTableRow(line);
       index += 2;
       const rows: string[][] = [];
@@ -107,25 +101,30 @@ function parseMarkdown(markdown: string): MarkdownBlock[] {
   return blocks;
 }
 
-function renderInline(text: string): ReactNode[] {
-  return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\((?:https?:\/\/|mailto:)[^)]+\))/g).map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
+function groupSections(blocks: MarkdownBlock[]): CaseStudySection[] {
+  const sections: CaseStudySection[] = [];
+  let current: CaseStudySection | null = null;
+
+  for (const block of blocks) {
+    if (block.kind === "heading" && block.level === 2) {
+      current = {
+        title: block.text,
+        id: `section-${block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`,
+        blocks: [],
+      };
+      sections.push(current);
+    } else if (current) {
+      current.blocks.push(block);
     }
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return <code key={index}>{part.slice(1, -1)}</code>;
-    }
-    const link = part.match(/^\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^)]+)\)$/);
-    if (link) {
-      return <a key={index} href={link[2]}>{link[1]}</a>;
-    }
-    return part;
-  });
+  }
+
+  return sections;
 }
 
-async function loadStudy(slug: string) {
+async function loadStudy(slug: string): Promise<CaseStudyData | null> {
   const fileName = caseStudyFiles[slug];
-  if (!fileName) return null;
+  const presentation = caseStudyPresentation[slug];
+  if (!fileName || !presentation) return null;
 
   const filePath = path.join(process.cwd(), "content", "case-studies", fileName);
   const source = await readFile(filePath, "utf8");
@@ -134,8 +133,19 @@ async function loadStudy(slug: string) {
   const blocks = parseMarkdown(body);
   const summary = blocks[0]?.kind === "paragraph" ? blocks[0].text : "";
   const details = summary ? blocks.slice(1) : blocks;
+  const orderIndex = projectOrder.findIndex((project) => project.slug === slug);
+  const previous = projectOrder[(orderIndex - 1 + projectOrder.length) % projectOrder.length];
+  const next = projectOrder[(orderIndex + 1) % projectOrder.length];
 
-  return { title, summary, details };
+  return {
+    slug,
+    title,
+    summary,
+    sections: groupSections(details),
+    presentation,
+    previous,
+    next,
+  };
 }
 
 export function generateStaticParams() {
@@ -144,89 +154,18 @@ export function generateStaticParams() {
 
 export const dynamicParams = false;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const study = await loadStudy(slug);
-
   return {
-    title: study ? study.title + " | Dashrath Bhil" : "Project case study | Dashrath Bhil",
+    title: study ? `${study.title} | Dashrath Bhil` : "Project case study | Dashrath Bhil",
     description: study?.summary.replace(/\*\*|`/g, ""),
   };
 }
 
-export default async function CaseStudyPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const study = await loadStudy(slug);
   if (!study) notFound();
-
-  return (
-    <div className="case-study-page">
-      <div className="case-study-shell">
-        <a className="case-study-back" href="/#projects">
-          <span aria-hidden="true">←</span> Back to selected projects
-        </a>
-
-        <article className="case-study-card">
-          <p className="case-study-label">Project case study</p>
-          <h1 className="case-study-title">{study.title}</h1>
-          {study.summary && <p className="case-study-summary">{renderInline(study.summary)}</p>}
-
-          <div className="case-study-content">
-            {study.details.map((block, index) => {
-              if (block.kind === "heading") {
-                if (block.level === 2) return <h2 key={index}>{block.text}</h2>;
-                if (block.level === 3) return <h3 key={index}>{block.text}</h3>;
-                return <h4 key={index}>{block.text}</h4>;
-              }
-
-              if (block.kind === "list") {
-                const List = block.ordered ? "ol" : "ul";
-                return (
-                  <List key={index}>
-                    {block.items.map((item) => (
-                      <li key={item}>{renderInline(item)}</li>
-                    ))}
-                  </List>
-                );
-              }
-
-              if (block.kind === "table") {
-                return (
-                  <div className="case-study-table-wrap" key={index} role="region" aria-label="Case study outcomes" tabIndex={0}>
-                    <table>
-                      <thead>
-                        <tr>{block.headers.map((cell, cellIndex) => <th key={`${cell}-${cellIndex}`}>{renderInline(cell)}</th>)}</tr>
-                      </thead>
-                      <tbody>
-                        {block.rows.map((row, rowIndex) => (
-                          <tr key={rowIndex}>
-                            {block.headers.map((_, cellIndex) => <td key={cellIndex}>{renderInline(row[cellIndex] ?? "")}</td>)}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                );
-              }
-
-              return <p key={index}>{renderInline(block.text)}</p>;
-            })}
-          </div>
-
-          <footer className="case-study-footer">
-            <a href="/#projects">Selected projects</a>
-            <a href="/#contact">Contact Dashrath</a>
-          </footer>
-        </article>
-      </div>
-    </div>
-  );
+  return <CaseStudyTemplate study={study} />;
 }

@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Instrument_Serif, Inter } from "next/font/google";
 import Script from "next/script";
 import { Navbar } from "@/components/navbar";
+import { BackToTop } from "@/components/ui/back-to-top";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -55,7 +64,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>
       <head>
         <Script
           id="theme-bootstrap"
@@ -68,6 +77,7 @@ export default function RootLayout({
         <main id="main-content" className="relative z-10 flex-1">
           {children}
         </main>
+        <BackToTop />
       </body>
     </html>
   );

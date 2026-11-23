@@ -3,10 +3,15 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const navLinks = [
+const resumePath = "/Dashrath_Bhil_Backend_Software_Engineer_Resume.pdf";
+
+type NavLink = { label: string; href: string; external?: boolean };
+
+const navLinks: NavLink[] = [
   { label: "Projects", href: "#projects" },
   { label: "Skills", href: "#skills" },
   { label: "How I work", href: "#approach" },
+  { label: "Resume", href: resumePath, external: true },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -60,14 +65,20 @@ export function Navbar() {
   return (
     <header className="site-header">
       <div className="page-container site-header__inner">
-        <a href="#hero" className="site-logo" aria-label="Dashrath Bhil, home">
+        <a href="/#hero" className="site-logo" aria-label="Dashrath Bhil, home">
           <span className="site-logo__mark" aria-hidden="true">DB</span>
           <span>Dashrath Bhil</span>
         </a>
 
         <nav className="desktop-nav" aria-label="Main navigation">
-          {navLinks.slice(0, 3).map((link) => (
-            <a key={link.href} href={link.href} className="nav-link">
+          {navLinks.slice(0, 4).map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="nav-link"
+              target={link.external ? "_blank" : undefined}
+              rel={link.external ? "noopener noreferrer" : undefined}
+            >
               {link.label}
             </a>
           ))}
@@ -125,6 +136,8 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   className="mobile-nav__link"
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}

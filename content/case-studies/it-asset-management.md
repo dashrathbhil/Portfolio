@@ -1,4 +1,4 @@
-# IT Asset Management
+# InfraCore LAPS
 A USB-assisted device inventory workflow with QR-based lookup through a web application.
 
 ## The business problem

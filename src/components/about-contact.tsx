@@ -218,6 +218,7 @@ export function ContactSection() {
                     className="field-input"
                     type="text"
                     autoComplete="name"
+                    placeholder="Your name"
                     value={formData.name}
                     onChange={(event) => updateField("name", event.target.value)}
                     aria-invalid={Boolean(errors.name)}
@@ -233,6 +234,7 @@ export function ContactSection() {
                     className="field-input"
                     type="email"
                     autoComplete="email"
+                    placeholder="you@email.com"
                     value={formData.email}
                     onChange={(event) => updateField("email", event.target.value)}
                     aria-invalid={Boolean(errors.email)}
@@ -248,6 +250,7 @@ export function ContactSection() {
                     className="field-input"
                     type="tel"
                     autoComplete="tel"
+                    placeholder="Phone (optional)"
                     value={formData.phone}
                     onChange={(event) => updateField("phone", event.target.value)}
                     aria-invalid={Boolean(errors.phone)}
@@ -263,6 +266,7 @@ export function ContactSection() {
                     className="field-input field-input--message"
                     rows={4}
                     maxLength={5000}
+                    placeholder="A little context about what you have in mind"
                     value={formData.message}
                     onChange={(event) => updateField("message", event.target.value)}
                     aria-invalid={Boolean(errors.message)}
@@ -290,10 +294,8 @@ export function ContactSection() {
 export function Footer() {
   return (
     <footer className="site-footer">
-      <div className="page-container site-footer__inner">
-        <span>© 2026 Dashrath Bhil</span>
-        <span>Backend Software Engineer · Ahmedabad, Gujarat</span>
-        <a href="#hero">Back to top ↑</a>
+      <div className="site-footer__inner">
+        <span style={{ width: "100%", textAlign: "center" }}>© 2026 Dashrath Bhil</span>
       </div>
     </footer>
   );
