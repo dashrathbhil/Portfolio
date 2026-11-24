@@ -679,51 +679,36 @@ textarea:focus-visible {
   font-weight: 600;
 }
 
-.project-image--flow {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 17px;
-  padding: 25px;
+.project-image--infracore {
+  isolation: isolate;
   background:
-    radial-gradient(circle at 88% 18%, var(--accent-subtle) 0, transparent 42%),
-    var(--bg-tertiary);
+    radial-gradient(ellipse at 48% 0%, rgba(89, 82, 250, 0.32), transparent 65%),
+    #080d20;
 }
 
-.project-flow__label {
+.project-infracore-screen {
+  position: absolute;
+  top: 8px;
+  width: 460px;
+  max-width: none;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.project-infracore-screen--scan {
+  z-index: 2;
+  left: calc(50% - 146px);
+  transform: scale(0.3);
+}
+
+.project-infracore-screen--details {
+  z-index: 1;
+  left: calc(50% + 8px);
+  transform: scale(0.3);
+}
+
+.project-infracore-screen .infracore-ui {
   margin: 0;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.project-flow__steps {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.project-flow__step {
-  display: flex;
-  min-height: 48px;
-  flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 7px;
-  border: 1px solid var(--illustration-border);
-  border-radius: 7px;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
-  font-size: 12px;
-  text-align: center;
-}
-
-.project-flow__step span {
-  color: var(--accent);
-  font-size: 13px;
 }
 
 .project-body {

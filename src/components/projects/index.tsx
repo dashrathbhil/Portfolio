@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { InfraCoreLapsMockup } from "../case-studies/infracore-laps-mockup";
 
 type ProjectCard = {
   slug: string;
@@ -6,7 +7,6 @@ type ProjectCard = {
   name: string;
   description: string;
   images: { src: string; alt: string }[];
-  flow?: string[];
 };
 
 const projects: ProjectCard[] = [
@@ -44,7 +44,6 @@ const projects: ProjectCard[] = [
     description:
       "Built a PowerShell and web workflow to collect PC details and retrieve asset records through QR-based lookup.",
     images: [],
-    flow: ["PC inventory", "QR lookup", "Asset record"],
   },
 ];
 
@@ -65,7 +64,20 @@ export function ProjectsSection() {
         <div className="project-grid">
           {projects.map((project) => (
             <article className="project-card" key={project.slug}>
-              {project.images.length > 0 ? (
+              {project.slug === "it-asset-management" ? (
+                <div
+                  className="project-image project-image--infracore"
+                  role="img"
+                  aria-label="InfraCore LAPS app preview showing QR scanning and device details"
+                >
+                  <div className="project-infracore-screen project-infracore-screen--scan" aria-hidden="true">
+                    <InfraCoreLapsMockup screen="scan" label="QR scanning screen" />
+                  </div>
+                  <div className="project-infracore-screen project-infracore-screen--details" aria-hidden="true">
+                    <InfraCoreLapsMockup screen="result" label="Device details screen" />
+                  </div>
+                </div>
+              ) : (
                 <div className={"project-image" + (project.images.length > 1 ? " project-image--split" : "")}>
                   {project.images.map((image) => (
                     <div className="project-image__frame" key={image.src}>
@@ -78,18 +90,6 @@ export function ProjectsSection() {
                       />
                     </div>
                   ))}
-                </div>
-              ) : (
-                <div className="project-image project-image--flow" role="img" aria-label="PC inventory, QR lookup, asset record">
-                  <p className="project-flow__label">Device workflow</p>
-                  <div className="project-flow__steps">
-                    {project.flow?.map((step, index) => (
-                      <span className="project-flow__step" key={step}>
-                        {step}
-                        {index < (project.flow?.length ?? 0) - 1 && <span aria-hidden="true">→</span>}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               )}
 
